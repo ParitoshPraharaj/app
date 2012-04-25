@@ -5,6 +5,7 @@ def full_title(page_title)
   else
     "#{base_title} | #{page_title}"
   end
+  
   def sign_in(user)
     visit signin_path
     fill_in "Email", :with => user.email

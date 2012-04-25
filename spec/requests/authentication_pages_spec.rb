@@ -1,14 +1,18 @@
 require 'spec_helper'
 
 describe "AuthenticationPages" do
+  
   subject{ page }
+  
   describe "visit signin page" do
       before{ visit signin_path }
       it {should have_selector('h1', :text => "Sign In")}
       it  {should have_selector('title', :text => "Sign In")}
   end
+  
   describe "sign in" do
     before{visit signin_path}
+    
     describe "with invalid information" do
       before{click_button "Sign In"}
        it {should have_selector('h1', :text => "Sign In")}
@@ -19,9 +23,10 @@ describe "AuthenticationPages" do
          it{should_not have_selector('div.alert.alert-error')}
        end
     end
+    
     describe "with valid information" do
       let(:user){FactoryGirl.create(:user)}
-      before{sign_in user}
+      before { sign_in user }
       describe "followed by signout link" do
         before{click_link "Sign Out"}
         it{should have_link("Sign In")}
@@ -35,6 +40,7 @@ describe "AuthenticationPages" do
       
     end
   end
+  
   describe "authorization" do
     
     describe "for non-signed in users" do
@@ -47,30 +53,58 @@ describe "AuthenticationPages" do
         end
         describe "after signing in" do
           it "should redirect to the protected page" do
-            page.should have_selector('title', :text => 'Edit User')
+            page.should have_selector('title', :text => 'Edit user')
+          end
+        end
+        describe "when signing in again" do
+          before do
+            visit sign_in_path
+            fill_in "Email", :with => user.email
+            fill_in "Password", :with => user.password
+            click_button 'Sign In'
+          end
+          it "should render the default profile page" do
+            page.should have_selector('title', :text => user.name)
           end
           
         end
+        describe "in the microposts controller" do
+          describe "submitting to the create path" do
+            before{post microposts_path}
+            specify{response.should redirect_to(sign_in path)}
+          end
+          describe "submitting to the destroy path" do
+            before do
+              micropost=FactoryGirl.create(:micropost)
+              delete micropost_path(micropost)  
+            end
+            specify{response.should redirect_to(sign_in path)}
+          end
+        end
+        
       end
-      
     end
     
     describe "with non-signed in users" do
       let(:user){FactoryGirl.create(:user)}
       
       describe "in users controller" do
+        
         describe "visit edit page" do
           before{visit edit_user_path(user)}
           it{should have_selector('title', :text => 'Sign In')}
         end
+        
         describe "visit index page" do
           before{visit users_path}
           it{should have_selector('title', :text => 'Sign In')}
         end
+        
         describe "while submitting to the update action" do
           before { put user_path(user)}
           specify{response.should redirect_to(signin_path)}
         end
+        
       end
     end
     
@@ -85,20 +119,22 @@ describe "AuthenticationPages" do
       end
       
       describe "while submitting a PUT request to users#update action" do
-        before {put user_path(wrong_user)}
+        before { put user_path(wrong_user)}
         specify { response.should redirect_to(root_path) }
       end
     end
     
     describe "as a non-admin user" do
       let(:user){FactoryGirl.create(:user)}
-      let(:non-admin){FactoryGirl.create(:user)}
+      let(:non_admin){FactoryGirl.create(:user)}
       
-      before{sign_in non_admin}
+      before{ sign_in non_admin }
+      
       it "while issuing DELETE requests to the users#delete action" do
-        before{delete user_path(user)}
-        it{response.should redirect_to(root_path)}
+        before { delete user_path(user) }
+        specify{response.should redirect_to(root_path)}
       end
     end
+    
   end
 end
