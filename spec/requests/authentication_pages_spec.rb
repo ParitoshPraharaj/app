@@ -80,8 +80,17 @@ describe "AuthenticationPages" do
             end
             specify{response.should redirect_to(sign_in path)}
           end
+        end 
+        describe "in the Relationships Controller" do
+          describe "while submitting to the create action" do
+            before {post relationships_path}
+            specify {response.should redirect_to(signin_path)}
+          end
+          describe "while submitting to the delete action" do
+            before {delete relationship_path(1)}
+            specify {response.should redirect_to(signin_path)}
+          end
         end
-        
       end
     end
     
@@ -90,6 +99,15 @@ describe "AuthenticationPages" do
       
       describe "in users controller" do
         
+        describe "it should have the following link" do
+          before {visit following_user_path(user)}
+          it {should have_selector('title', :text => 'Sign In')}
+        end
+        
+        describe "it should have the followers link" do
+          before {visit followers_user_path(user) }
+          it {should have_selector('title', :text => 'Sign In')}
+        end
         describe "visit edit page" do
           before{visit edit_user_path(user)}
           it{should have_selector('title', :text => 'Sign In')}

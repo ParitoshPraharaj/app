@@ -11,5 +11,6 @@
 	</span>	
 	<% if current_user?(feed_item) %>
 		<%= link_to 'delete', feed_item, :method => :delete, :confirm => 'Are you sure?', :title => feed_item.content %>
+	<% end %>	
 </li>
 	
